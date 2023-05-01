@@ -1,50 +1,39 @@
-import { Component } from 'react';
 import { createPortal } from 'react-dom';
+import { useEffect } from 'react';
 import { Overlay, ModalContainer, ModalBtn } from './Modal.styled';
 
 const modalRoot = document.querySelector('#modal-root');
 
-class Modal extends Component {
-  styles = {
-    position: 'absolute',
-    right: '20px',
-    top: '60px',
-    cursor: 'pointer',
-  };
+const Modal = ({ largeImage, children, onClose }) => {
+  useEffect(() => {
+    const handelKeyDown = e => {
+      if (e.code === 'Escape') {
+        onClose();
+      }
+    };
 
-  componentDidMount() {
-    window.addEventListener('keydown', this.handelKeyDown);
-  }
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.handelKeyDown);
-  }
+    document.addEventListener('keydown', handelKeyDown);
+    return () => document.removeEventListener('keydown', handelKeyDown);
+  });
 
-  handelButtonClick = () => {
-    this.props.onClose();
-  };
-  handelKeyDown = e => {
-    if (e.code === 'Escape') {
-      this.props.onClose();
-    }
-  };
-  handelBackdropClick = e => {
+  const handelBackdropClick = e => {
     if (e.currentTarget === e.target) {
-      this.props.onClose();
+      onClose();
     }
   };
 
-  render() {
-    const { largeImage, children } = this.props;
-    return createPortal(
-      <Overlay onClick={this.handelBackdropClick} largeImage={largeImage}>
-        <ModalBtn type="button" onClick={this.handelButtonClick}>
-          X
-        </ModalBtn>
-        <ModalContainer>{children}</ModalContainer>
-      </Overlay>,
-      modalRoot
-    );
-  }
-}
+  const handelButtonClick = () => {
+    onClose();
+  };
 
+  return createPortal(
+    <Overlay onClick={handelBackdropClick} largeImage={largeImage}>
+      <ModalBtn type="button" onClick={handelButtonClick}>
+        X
+      </ModalBtn>
+      <ModalContainer>{children}</ModalContainer>
+    </Overlay>,
+    modalRoot
+  );
+};
 export default Modal;
